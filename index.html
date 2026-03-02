@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Panel de Control - Recreo</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@400;600;700;800&display=swap');
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: 'Nunito', sans-serif; background: #f0f4f8; min-height: 100vh; padding: 24px 16px; }
+  .header { text-align: center; margin-bottom: 36px; }
+  .header h1 { font-family: 'Fredoka One', cursive; font-size: 2.6rem; color: #1a1a2e; margin-bottom: 6px; }
+  .header p { color: #888; font-size: 15px; }
+  .section-title { font-family: 'Fredoka One', cursive; font-size: 1.4rem; color: #1a1a2e; margin-bottom: 16px; }
+  .qr-section { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; max-width: 800px; margin: 0 auto 40px; }
+  .qr-card { background: white; border-radius: 24px; padding: 24px 16px; text-align: center; box-shadow: 0 4px 20px rgba(0,0,0,0.08); }
+  .qr-card h3 { font-family: 'Fredoka One', cursive; font-size: 1.2rem; margin-bottom: 4px; }
+  .qr-card h3.naranja { color: #f7971e; }
+  .qr-card h3.verde { color: #11998e; }
+  .qr-tipo { font-size: 11px; font-weight: 700; padding: 3px 10px; border-radius: 20px; display: inline-block; margin-bottom: 12px; }
+  .qr-tipo.entrega { background: #fef3c7; color: #d97706; }
+  .qr-tipo.devolucion { background: #dcfce7; color: #16a34a; }
+  .qr-wrapper { display: inline-block; padding: 10px; border-radius: 12px; background: white; border: 3px solid; margin-bottom: 6px; }
+  .qr-card.a8 .qr-wrapper { border-color: #ffd200; }
+  .qr-card.a9 .qr-wrapper { border-color: #38ef7d; }
+  .qr-card.d8 .qr-wrapper { border-color: #f7971e; }
+  .qr-card.d9 .qr-wrapper { border-color: #11998e; }
+  .qr-label { font-size: 11px; color: #aaa; }
+  .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 12px; max-width: 900px; margin: 0 auto 40px; }
+  .stat-card { background: white; border-radius: 18px; padding: 18px 12px; text-align: center; box-shadow: 0 4px 16px rgba(0,0,0,0.07); }
+  .stat-emoji { font-size: 28px; margin-bottom: 6px; }
+  .stat-value { font-family: 'Fredoka One', cursive; font-size: 1.8rem; color: #1a1a2e; }
+  .stat-label { font-size: 11px; color: #999; font-weight: 600; margin-top: 2px; }
+  .table-section { max-width: 900px; margin: 0 auto; background: white; border-radius: 24px; padding: 28px; box-shadow: 0 4px 20px rgba(0,0,0,0.08); }
+  .table-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 12px; }
+  .btn-refresh { background: linear-gradient(135deg, #667eea, #764ba2); color: white; border: none; padding: 10px 20px; border-radius: 12px; font-family: 'Nunito', sans-serif; font-weight: 700; font-size: 14px; cursor: pointer; }
+  .btn-clear { background: #fee2e2; color: #dc2626; border: none; padding: 10px 20px; border-radius: 12px; font-family: 'Nunito', sans-serif; font-weight: 700; font-size: 14px; cursor: pointer; }
+  table { width: 100%; border-collapse: collapse; }
+  th { text-align: left; font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; color: #999; padding: 8px 10px; border-bottom: 2px solid #f0f0f0; }
+  td { padding: 12px 10px; border-bottom: 1px solid #f8f8f8; font-size: 13px; font-weight: 600; color: #333; }
+  tr:last-child td { border-bottom: none; }
+  .badge-grado { display: inline-block; padding: 3px 10px; border-radius: 20px; font-size: 11px; font-weight: 700; }
+  .badge-8 { background: #ffd20020; color: #d97706; }
+  .badge-9 { background: #38ef7d20; color: #059669; }
+  .badge-tipo { display: inline-block; padding: 3px 10px; border-radius: 20px; font-size: 11px; font-weight: 700; }
+  .entrega { background: #fef3c7; color: #d97706; }
+  .devolucion { background: #dcfce7; color: #16a34a; }
+  .badge-estado { display: inline-block; padding: 3px 10px; border-radius: 20px; font-size: 11px; font-weight: 700; }
+  .bueno { background: #dcfce7; color: #16a34a; }
+  .malo { background: #fee2e2; color: #dc2626; }
+  .empty-state { text-align: center; padding: 40px; color: #bbb; }
+  .empty-state .icon { font-size: 48px; margin-bottom: 12px; }
+  .auto-badge { display: inline-block; background: #dcfce7; color: #16a34a; font-size: 11px; font-weight: 700; padding: 3px 10px; border-radius: 20px; margin-left: 8px; vertical-align: middle; }
+  .status-bar { max-width: 900px; margin: 0 auto 10px; text-align: right; font-size: 12px; color: #aaa; }
+  @media (max-width: 480px) { .qr-section { grid-template-columns: 1fr; } }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>🏫 Panel de Control</h1>
+  <p>Sistema de préstamo y devolución · Recreo 9:30–9:55 AM
+    <span class="auto-badge">● Auto-actualiza</span>
+  </p>
+</div>
+
+<div style="max-width:800px;margin:0 auto 12px;">
+  <div class="section-title">📱 Códigos QR</div>
+</div>
+<div class="qr-section">
+  <div class="qr-card a8">
+    <h3 class="naranja">8° Grado</h3>
+    <div class="qr-tipo entrega">📤 ENTREGA</div>
+    <div class="qr-wrapper"><div id="qr-e8"></div></div>
+    <div class="qr-label">Cuando sacan el objeto</div>
+  </div>
+  <div class="qr-card a9">
+    <h3 class="verde">9° Grado</h3>
+    <div class="qr-tipo entrega">📤 ENTREGA</div>
+    <div class="qr-wrapper"><div id="qr-e9"></div></div>
+    <div class="qr-label">Cuando sacan el objeto</div>
+  </div>
+  <div class="qr-card d8">
+    <h3 class="naranja">8° Grado</h3>
+    <div class="qr-tipo devolucion">📥 DEVOLUCIÓN</div>
+    <div class="qr-wrapper"><div id="qr-d8"></div></div>
+    <div class="qr-label">Cuando regresan el objeto</div>
+  </div>
+  <div class="qr-card d9">
+    <h3 class="verde">9° Grado</h3>
+    <div class="qr-tipo devolucion">📥 DEVOLUCIÓN</div>
+    <div class="qr-wrapper"><div id="qr-d9"></div></div>
+    <div class="qr-label">Cuando regresan el objeto</div>
+  </div>
+</div>
+
+<div style="max-width:900px;margin:0 auto 12px;">
+  <div class="section-title">📊 Resumen del Día</div>
+</div>
+<div class="stats-grid">
+  <div class="stat-card"><div class="stat-emoji">📤</div><div class="stat-value" id="entrega-count">0</div><div class="stat-label">Entregas</div></div>
+  <div class="stat-card"><div class="stat-emoji">📥</div><div class="stat-value" id="dev-count">0</div><div class="stat-label">Devoluciones</div></div>
+  <div class="stat-card"><div class="stat-emoji">⚽</div><div class="stat-value" id="fut-count">0</div><div class="stat-label">Pelota Fútbol</div></div>
+  <div class="stat-card"><div class="stat-emoji">🏐</div><div class="stat-value" id="voll-count">0</div><div class="stat-label">Volleyball</div></div>
+  <div class="stat-card"><div class="stat-emoji">🪢</div><div class="stat-value" id="cuerda-count">0</div><div class="stat-label">Salta Cuerdas</div></div>
+  <div class="stat-card"><div class="stat-emoji">🎲</div><div class="stat-value" id="mesa-count">0</div><div class="stat-label">Juego de Mesa</div></div>
+  <div class="stat-card"><div class="stat-emoji">⚠️</div><div class="stat-value" id="malo-count">0</div><div class="stat-label">Mal Estado</div></div>
+</div>
+
+<div class="status-bar" id="status-bar">Cargando...</div>
+<div class="table-section">
+  <div class="table-header">
+    <div class="section-title" style="margin:0">📝 Registros</div>
+    <div style="display:flex;gap:10px;flex-wrap:wrap;">
+      <button class="btn-refresh" onclick="loadData()">🔄 Actualizar</button>
+      <button class="btn-clear" onclick="clearData()">🗑 Limpiar Todo</button>
+    </div>
+  </div>
+  <div id="table-container">
+    <div class="empty-state"><div class="icon">📭</div><p>No hay registros aún.<br>Escanea un QR para empezar.</p></div>
+  </div>
+</div>
+
+<script>
+  const BASE = 'https://therichard38su-del.github.io/Banco-Deportivo/';
+  const urls = {
+    e8: BASE + 'grado_8.html',
+    e9: BASE + 'grado_9.html',
+    d8: BASE + 'devolucion_8.html',
+    d9: BASE + 'devolucion_9.html'
+  };
+
+  function makeQR(id, url, color) {
+    try {
+      new QRCode(document.getElementById(id), { text: url, width: 130, height: 130, colorDark: color, colorLight: '#ffffff', correctLevel: QRCode.CorrectLevel.H });
+    } catch(e) { document.getElementById(id).innerHTML = '<p style="padding:10px;font-size:11px;color:#999;">Error QR</p>'; }
+  }
+
+  makeQR('qr-e8', urls.e8, '#f7971e');
+  makeQR('qr-e9', urls.e9, '#11998e');
+  makeQR('qr-d8', urls.d8, '#f7971e');
+  makeQR('qr-d9', urls.d9, '#11998e');
+
+  function loadData() {
+    let registros = [];
+    try { registros = JSON.parse(localStorage.getItem('registros_recreo') || '[]'); } catch(e) {}
+    registros.sort((a, b) => b.timestamp - a.timestamp);
+    renderTable(registros);
+    renderStats(registros);
+    const now = new Date().toLocaleTimeString('es', {hour:'2-digit', minute:'2-digit', second:'2-digit'});
+    document.getElementById('status-bar').textContent = 'Actualizado: ' + now + ' · ' + registros.length + ' registro(s)';
+  }
+
+  function renderStats(r) {
+    document.getElementById('entrega-count').textContent = r.filter(x=>!x.tipo||x.tipo==='Entrega').length;
+    document.getElementById('dev-count').textContent = r.filter(x=>x.tipo==='Devolución').length;
+    document.getElementById('fut-count').textContent = r.filter(x=>x.objeto==='Pelota de Fútbol').length;
+    document.getElementById('voll-count').textContent = r.filter(x=>x.objeto==='Volleyball').length;
+    document.getElementById('cuerda-count').textContent = r.filter(x=>x.objeto==='Salta Cuerdas').length;
+    document.getElementById('mesa-count').textContent = r.filter(x=>x.objeto==='Juego de Mesa').length;
+    document.getElementById('malo-count').textContent = r.filter(x=>x.estado==='Mal estado').length;
+  }
+
+  function renderTable(registros) {
+    const container = document.getElementById('table-container');
+    if (registros.length === 0) {
+      container.innerHTML = '<div class="empty-state"><div class="icon">📭</div><p>No hay registros aún.<br>Escanea un QR para empezar.</p></div>';
+      return;
+    }
+    const emoji = {'Pelota de Fútbol':'⚽','Volleyball':'🏐','Salta Cuerdas':'🪢','Juego de Mesa':'🎲'};
+    const rows = registros.map(r => {
+      const tipo = r.tipo || 'Entrega';
+      const tipoClass = tipo === 'Devolución' ? 'devolucion' : 'entrega';
+      const tipoIcon = tipo === 'Devolución' ? '📥' : '📤';
+      return `<tr>
+        <td><span class="badge-grado ${r.grado&&r.grado.includes('8')?'badge-8':'badge-9'}">${r.grado||'—'}</span></td>
+        <td><span class="badge-tipo ${tipoClass}">${tipoIcon} ${tipo}</span></td>
+        <td>${emoji[r.objeto]||''} ${r.objeto||'—'}</td>
+        <td><span class="badge-estado ${r.estado==='Buen estado'?'bueno':'malo'}">${r.estado||'—'}</span></td>
+        <td>${r.hora||'—'}</td>
+      </tr>`;
+    }).join('');
+    container.innerHTML = `<table><thead><tr><th>Grado</th><th>Tipo</th><th>Objeto</th><th>Estado</th><th>Hora</th></tr></thead><tbody>${rows}</tbody></table>`;
+  }
+
+  function clearData() {
+    if (!confirm('¿Borrar todos los registros?')) return;
+    try { localStorage.removeItem('registros_recreo'); } catch(e) {}
+    loadData();
+  }
+
+  loadData();
+  setInterval(loadData, 10000);
+</script>
+
+</body>
+</html>
