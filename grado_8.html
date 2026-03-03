@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Registro Recreo - 8° Grado</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@400;600;700;800&display=swap');
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: 'Nunito', sans-serif; background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%); min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 20px; }
+  .card { background: white; border-radius: 28px; padding: 36px 32px; max-width: 440px; width: 100%; box-shadow: 0 30px 80px rgba(0,0,0,0.4); position: relative; overflow: hidden; }
+  .card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 8px; background: linear-gradient(90deg, #f7971e, #ffd200); }
+  .badge { display: inline-block; background: linear-gradient(135deg, #f7971e, #ffd200); color: white; font-family: 'Fredoka One', cursive; font-size: 13px; padding: 6px 16px; border-radius: 20px; margin-bottom: 16px; }
+  h1 { font-family: 'Fredoka One', cursive; font-size: 2.4rem; color: #1a1a2e; margin-bottom: 6px; }
+  .subtitle { color: #888; font-size: 14px; margin-bottom: 28px; }
+  .time-box { background: linear-gradient(135deg, #f7971e15, #ffd20015); border: 2px solid #ffd200; border-radius: 14px; padding: 14px 18px; display: flex; align-items: center; gap: 12px; margin-bottom: 28px; }
+  .time-icon { font-size: 24px; }
+  .time-label { font-size: 12px; color: #888; }
+  .time-value { font-size: 20px; font-weight: 800; color: #1a1a2e; }
+  label { display: block; font-size: 13px; font-weight: 700; color: #555; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.5px; }
+  .field { margin-bottom: 20px; }
+  .objeto-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .objeto-btn { border: 2px solid #e8e8e8; border-radius: 14px; padding: 14px 10px; background: white; cursor: pointer; text-align: center; transition: all 0.2s; font-family: 'Nunito', sans-serif; font-weight: 700; font-size: 13px; color: #444; }
+  .objeto-btn .emoji { font-size: 28px; display: block; margin-bottom: 6px; }
+  .objeto-btn:hover { border-color: #ffd200; background: #ffd20010; }
+  .objeto-btn.selected { border-color: #f7971e; background: linear-gradient(135deg, #f7971e20, #ffd20020); color: #1a1a2e; }
+  .estado-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 28px; }
+  .estado-btn { border: 2px solid #e8e8e8; border-radius: 14px; padding: 14px; background: white; cursor: pointer; text-align: center; font-family: 'Nunito', sans-serif; font-weight: 700; font-size: 14px; transition: all 0.2s; }
+  .estado-btn.bueno:hover, .estado-btn.bueno.selected { border-color: #22c55e; background: #22c55e15; color: #16a34a; }
+  .estado-btn.malo:hover, .estado-btn.malo.selected { border-color: #ef4444; background: #ef444415; color: #dc2626; }
+  .btn-submit { width: 100%; padding: 18px; background: linear-gradient(135deg, #f7971e, #ffd200); border: none; border-radius: 16px; font-family: 'Fredoka One', cursive; font-size: 18px; color: white; cursor: pointer; transition: transform 0.2s; box-shadow: 0 8px 20px rgba(247,151,30,0.4); }
+  .btn-submit:hover { transform: translateY(-2px); }
+  .btn-submit:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
+  .success { display: none; text-align: center; padding: 20px; }
+  .success .check { font-size: 64px; margin-bottom: 16px; }
+  .success h2 { font-family: 'Fredoka One', cursive; font-size: 2rem; color: #22c55e; }
+  .success p { color: #888; margin-top: 8px; }
+  .error-msg { background: #fee2e2; color: #dc2626; padding: 10px 14px; border-radius: 10px; font-size: 13px; font-weight: 600; margin-bottom: 16px; display: none; }
+  .saving-msg { background: #dbeafe; color: #1d4ed8; padding: 10px 14px; border-radius: 10px; font-size: 13px; font-weight: 600; margin-bottom: 16px; display: none; }
+</style>
+</head>
+<body>
+<div class="card">
+  <div id="form-section">
+    <div class="badge">🏫 COLEGIO</div>
+    <h1>8° Grado</h1>
+    <p class="subtitle">Registro de objetos deportivos para el recreo</p>
+    <div class="time-box">
+      <span class="time-icon">⏰</span>
+      <div>
+        <div class="time-label">Horario de recreo</div>
+        <div class="time-value">9:30 AM – 9:55 AM</div>
+      </div>
+    </div>
+    <div class="error-msg" id="error-msg">⚠️ Por favor selecciona un objeto y su estado.</div>
+    <div class="saving-msg" id="saving-msg">⏳ Guardando registro...</div>
+    <div class="field">
+      <label>¿Qué objeto vas a llevar?</label>
+      <div class="objeto-grid">
+        <button class="objeto-btn" onclick="selectObjeto(this,'Pelota de Fútbol')"><span class="emoji">⚽</span>Pelota de Fútbol</button>
+        <button class="objeto-btn" onclick="selectObjeto(this,'Volleyball')"><span class="emoji">🏐</span>Volleyball</button>
+        <button class="objeto-btn" onclick="selectObjeto(this,'Salta Cuerdas')"><span class="emoji">🪢</span>Salta Cuerdas</button>
+        <button class="objeto-btn" onclick="selectObjeto(this,'Juego de Mesa')"><span class="emoji">🎲</span>Juego de Mesa</button>
+      </div>
+    </div>
+    <div class="field" style="margin-top:20px;">
+      <label>¿En qué estado está el objeto?</label>
+      <div class="estado-grid">
+        <button class="estado-btn bueno" onclick="selectEstado(this,'Buen estado')">✅ Buen Estado</button>
+        <button class="estado-btn malo" onclick="selectEstado(this,'Mal estado')">❌ Mal Estado</button>
+      </div>
+    </div>
+    <button class="btn-submit" id="btn-enviar" onclick="registrar()">📋 Registrar Préstamo</button>
+  </div>
+  <div class="success" id="success-section">
+    <div class="check">✅</div>
+    <h2>¡Registrado!</h2>
+    <p>Tu préstamo fue guardado correctamente.</p>
+    <p style="margin-top:8px;font-size:13px;color:#aaa;">8° Grado · <span id="hora-success"></span></p>
+    <button class="btn-submit" style="margin-top:24px;" onclick="resetForm()">Nuevo Registro</button>
+  </div>
+</div>
+<script>
+  const GRADO = "8° Grado";
+  let objetoSeleccionado = null, estadoSeleccionado = null;
+  function getNow() { return new Date().toLocaleTimeString('es',{hour:'2-digit',minute:'2-digit'}); }
+  function getFecha() { return new Date().toLocaleDateString('es'); }
+  function selectObjeto(el,val) { document.querySelectorAll('.objeto-btn').forEach(b=>b.classList.remove('selected')); el.classList.add('selected'); objetoSeleccionado=val; }
+  function selectEstado(el,val) { document.querySelectorAll('.estado-btn').forEach(b=>b.classList.remove('selected')); el.classList.add('selected'); estadoSeleccionado=val; }
+  function registrar() {
+    document.getElementById('error-msg').style.display='none';
+    if (!objetoSeleccionado||!estadoSeleccionado) { document.getElementById('error-msg').style.display='block'; return; }
+    document.getElementById('btn-enviar').disabled=true;
+    document.getElementById('saving-msg').style.display='block';
+    const registro = { grado:GRADO, objeto:objetoSeleccionado, estado:estadoSeleccionado, hora:getNow(), fecha:getFecha(), timestamp:Date.now() };
+    try {
+      const existentes = JSON.parse(localStorage.getItem('registros_recreo')||'[]');
+      existentes.push(registro);
+      localStorage.setItem('registros_recreo', JSON.stringify(existentes));
+    } catch(e) {}
+    document.getElementById('saving-msg').style.display='none';
+    document.getElementById('hora-success').textContent=registro.hora+' · '+registro.fecha;
+    document.getElementById('form-section').style.display='none';
+    document.getElementById('success-section').style.display='block';
+  }
+  function resetForm() {
+    objetoSeleccionado=null; estadoSeleccionado=null;
+    document.getElementById('btn-enviar').disabled=false;
+    document.querySelectorAll('.objeto-btn,.estado-btn').forEach(b=>b.classList.remove('selected'));
+    document.getElementById('form-section').style.display='block';
+    document.getElementById('success-section').style.display='none';
+  }
+</script>
+</body>
+</html>
